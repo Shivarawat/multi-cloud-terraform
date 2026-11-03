@@ -14,7 +14,7 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "first" {
-  bucket = "shiv-tf-day1-423370095818"
+  bucket = "shiv-tf-day1-293033346095"
 
   tags = {
     Project   = "multi-cloud-terraform"
