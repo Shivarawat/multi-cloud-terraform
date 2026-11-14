@@ -1,21 +1,36 @@
 # multi-cloud-terraform
 
-Infrastructure as Code on AWS, Azure and GCP with Terraform.
+Infrastructure as Code with Terraform: reusable modules, remote state with locking, and per-environment configs. AWS today, with Azure and GCP next.
 
-## day1-basics (AWS, ap-south-1)
+## Layout
 
-| File | What it creates |
-|---|---|
-| `main.tf` | AWS provider, an S3 bucket with tags |
-| `network.tf` | VPC `10.0.0.0/16`, public subnet `10.0.1.0/24`, Internet Gateway, route table + association |
-| `security.tf` | Security group: SSH from a single CIDR (`var.my_ip`), HTTP from anywhere |
-| `compute.tf` | Latest Amazon Linux 2023 AMI (data source), key pair, `t3.micro` running nginx via `user_data` |
+```
+bootstrap/              S3 state bucket (versioning, encryption, public access blocked, prevent_destroy)
+modules/
+  aws-network/          VPC, public subnets per AZ (for_each), Internet Gateway, route table
+  aws-web-server/       Security group, key pair, EC2 (Amazon Linux 2023, IMDSv2 enforced)
+envs/
+  dev/                  Uses both modules; state in S3 with native locking (use_lockfile)
+day1-basics/            First single-folder version (S3, VPC, SG, EC2 + nginx)
+```
+
+## Usage
 
 ```bash
-cd day1-basics
-echo 'my_ip = "<your-ip>/32"' > terraform.tfvars
+# 1. One-time: create the state bucket (local state)
+cd bootstrap && terraform init && terraform apply
+
+# 2. An environment (remote state in S3)
+cd ../envs/dev
+echo 'ssh_cidr = "<your-ip>/32"' > terraform.tfvars
 terraform init && terraform plan && terraform apply
 terraform destroy
 ```
 
-State, `.tfvars` and keys are git-ignored.
+## Design notes
+
+- **Remote state:** one bucket, one key per environment (`envs/dev/terraform.tfstate`), with S3-native lock files so concurrent applies can't corrupt state.
+- **Modules** take inputs and return outputs; `envs/dev` wires `module.network.vpc_id` into the web-server module.
+- **for_each over count** for subnets, so removing one AZ doesn't recreate the others.
+- **Security:** SSH limited to a single /32, IMDSv2 required, state encrypted, and no secrets, state or `.tfvars` in git.
+- **default_tags** on the provider tag every resource with Environment / ManagedBy / Project.
