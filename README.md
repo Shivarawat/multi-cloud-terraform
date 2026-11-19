@@ -39,3 +39,7 @@ terraform destroy
 - **default_tags** on the provider tag every resource with Environment / ManagedBy / Project.
 - **CI/CD:** PRs get format, validate, lint and Checkov checks, and the plan for each env is posted as a PR comment using a read-only role. Apply/destroy is a manual run gated by GitHub environment approval, using a separate apply role. Both roles are assumed via OIDC with trust pinned to this repo.
 - **Hardening:** IMDSv2 required, encrypted gp3 root volumes, SSH restricted to one /32.
+
+## CI status
+
+Pull requests run checks and post a Terraform plan for dev and prod.

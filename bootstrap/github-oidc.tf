@@ -1,5 +1,6 @@
 locals {
-  github_repo = "Shivarawat/multi-cloud-terraform"
+  # GitHub's immutable OIDC subject: owner@owner_id/repo@repo_id (stable across renames)
+  github_sub_prefix = "repo:Shivarawat@50742454/multi-cloud-terraform@1445965717"
 }
 
 resource "aws_iam_openid_connect_provider" "github" {
@@ -23,7 +24,7 @@ data "aws_iam_policy_document" "plan_trust" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${local.github_repo}:pull_request"]
+      values   = ["${local.github_sub_prefix}:pull_request"]
     }
   }
 }
@@ -72,8 +73,8 @@ data "aws_iam_policy_document" "apply_trust" {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
       values = [
-        "repo:${local.github_repo}:environment:dev",
-        "repo:${local.github_repo}:environment:prod",
+        "${local.github_sub_prefix}:environment:dev",
+        "${local.github_sub_prefix}:environment:prod",
       ]
     }
   }
