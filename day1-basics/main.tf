@@ -19,7 +19,7 @@ resource "aws_s3_bucket" "first" {
   tags = {
     Project   = "multi-cloud-terraform"
     ManagedBy = "terraform"
-    Owner = "shiv"
+    Owner     = "shiv"
   }
 }
 
