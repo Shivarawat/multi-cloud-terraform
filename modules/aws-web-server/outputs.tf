@@ -3,5 +3,5 @@ output "public_ip" {
 }
 
 output "ssh_command" {
-  value = "ssh -i ${trimsuffix(pathexpand(var.public_key_path), ".pub")} ec2-user@${aws_instance.this.public_ip}"
+  value = "ssh -i <your-private-key> ec2-user@${aws_instance.this.public_ip}"
 }

@@ -24,13 +24,25 @@ variable "ssh_cidr" {
   type        = string
 }
 
-variable "public_key_path" {
-  description = "Path to the SSH public key"
+variable "ssh_public_key" {
+  description = "SSH public key contents (e.g. ssh-ed25519 AAAA...)"
   type        = string
+}
+
+variable "extra_ingress_ports" {
+  description = "Extra TCP ports to open to the internet, e.g. [3000] for an app"
+  type        = list(number)
+  default     = []
 }
 
 variable "user_data" {
   description = "Script to run on first boot"
   type        = string
   default     = ""
+}
+
+variable "root_volume_gb" {
+  description = "Root disk size in GB"
+  type        = number
+  default     = 8
 }

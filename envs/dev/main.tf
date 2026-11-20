@@ -12,16 +12,20 @@ module "network" {
 module "web_server" {
   source = "../../modules/aws-web-server"
 
-  name            = "dev"
-  vpc_id          = module.network.vpc_id
-  subnet_id       = module.network.public_subnet_ids[0]
-  ssh_cidr        = var.ssh_cidr
-  public_key_path = "~/.ssh/day1_key.pub"
+  name           = "dev"
+  vpc_id         = module.network.vpc_id
+  subnet_id      = module.network.public_subnet_ids[0]
+  ssh_cidr       = var.ssh_cidr
+  ssh_public_key = var.ssh_public_key
 
-  user_data = <<-EOT
-    #!/bin/bash
-    dnf install -y nginx
-    echo "<h1>dev environment - built from modules</h1>" > /usr/share/nginx/html/index.html
-    systemctl enable --now nginx
-  EOT
+  instance_type       = "t3.small"
+  root_volume_gb      = 20
+  extra_ingress_ports = [3000]
+
+  user_data = templatefile("${path.module}/../../scripts/notification-pipeline.sh", {
+    repo_url        = "https://github.com/Shivarawat/notification-pipeline.git"
+    git_ref         = "main"
+    compose_version = "v2.29.7"
+    buildx_version  = "v0.17.1"
+  })
 }

@@ -29,6 +29,17 @@ resource "aws_security_group" "this" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  dynamic "ingress" {
+    for_each = var.extra_ingress_ports
+    content {
+      description = "App port ${ingress.value}"
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
+
   egress {
     description = "All outbound"
     from_port   = 0
@@ -44,7 +55,7 @@ resource "aws_security_group" "this" {
 
 resource "aws_key_pair" "this" {
   key_name   = "${var.name}-key"
-  public_key = file(pathexpand(var.public_key_path))
+  public_key = var.ssh_public_key
 }
 
 resource "aws_instance" "this" {
@@ -57,6 +68,12 @@ resource "aws_instance" "this" {
 
   metadata_options {
     http_tokens = "required"
+  }
+
+  root_block_device {
+    volume_size = var.root_volume_gb
+    volume_type = "gp3"
+    encrypted   = true
   }
 
   tags = {
